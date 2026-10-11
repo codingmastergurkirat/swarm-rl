@@ -27,7 +27,7 @@ def test_agents_cannot_swap_positions():
         agents=agents,
     )
 
-    state = env.step({
+    state, collisions = env.step({
         0: Action.RIGHT,
         1: Action.LEFT,
     })
@@ -36,3 +36,5 @@ def test_agents_cannot_swap_positions():
         Position(2, 1),
         Position(2, 2),
     )
+
+    assert collisions == {(0, 1)}

@@ -29,7 +29,7 @@ class GridWorld:
 				for agent in self.agents
 			)
 
-	def 	step(self,actions: Action):
+	def 	step(self,actions: dict[int,Action],) -> tuple[tuple[Position, ...],set[tuple[int,int]]]:
 			current_positions = {
 				agent.id: agent.position
 				for agent in self.agents
@@ -48,7 +48,7 @@ class GridWorld:
 				proposed_positions[agent.id] = proposed_position
 
 			# Colliosion handling will write here later
-			final_positions = self._resolve_collisions(
+			final_positions,collisions = self._resolve_collisions(
 				current_positions,
 				proposed_positions
 				)
@@ -56,44 +56,57 @@ class GridWorld:
 			for agent in self.agents:
 				agent.position = final_positions[agent.id]
 			
-			return self._get_state()
+			return self._get_state(), collisions
 
 	def     _resolve_collisions(
 			self,
 			current_positions : dict[int,Position],
 			proposed_positions : dict[int,Position]
-		) -> dict[id,position]:
+		) -> tuple[dict[int,Position],set[tuple[int,int]]]:
 
-			collision_agents = set()
-
-			agent_ids = list(current_positions.keys())
-
-			for i in range(len(agent_ids)):
-				for j in range(i+1,len(agent_ids)):
-
-					agent_a = agent_ids[i]
-					agent_b = agent_ids[j]
-
-					current_a = current_positions[agent_a]
-					current_b = current_positions[agent_b]
-
-					proposed_a = proposed_positions[agent_a]
-					proposed_b = proposed_positions[agent_b]
-
-					same_destination = proposed_a == proposed_b
-
-					# if both want to swap positions 
-
-					swapping_positions = (proposed_a == current_b and proposed_b == current_a and current_a != current_b)
-
-					if same_destination or swapping_positions:
-						collision_agents.add(agent_a)
-						collision_agents.add(agent_b)
 			final_positions = proposed_positions.copy()
+			collisions = set()
 
-			for agent_id in collision_agents:
-				final_positions[agent_id] = current_positions[agent_id]
-			return final_positions
+			while True:
+
+				collision_agents = set()
+				new_collisions = set()
+
+				agent_ids = list(current_positions.keys())
+
+				for i in range(len(agent_ids)):
+					for j in range(i+1,len(agent_ids)):
+
+						agent_a = agent_ids[i]
+						agent_b = agent_ids[j]
+
+						current_a = current_positions[agent_a]
+						current_b = current_positions[agent_b]
+
+						final_a = proposed_positions[agent_a]
+						final_b = proposed_positions[agent_b]
+
+						same_destination = final_a == final_b
+
+						# if both want to swap positions 
+
+						swapping_positions = (final_a == current_b and final_b == current_a and current_a != current_b)
+
+						if same_destination or swapping_positions:
+							collision_agents.add(agent_a)
+							collision_agents.add(agent_b)
+
+							new_collisions.add((min(agent_a, agent_b), max(agent_a, agent_b)))
+
+				if not collision_agents:
+					break
+
+				collisions.update(new_collisions)
+
+				for agent_id in collision_agents:
+					final_positions[agent_id] = current_positions[agent_id]
+
+			return final_positions, collisions
 
 
 

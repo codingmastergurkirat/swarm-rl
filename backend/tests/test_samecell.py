@@ -6,7 +6,7 @@ from app.environment.gridworld import GridWorld
 from app.environment.agent import Agent
 
 
-def test_agents_cannot_swap_positions():
+def test_agents_cannot_enter_same_cell():
     agents = [
         Agent(
             id=0,
@@ -15,7 +15,7 @@ def test_agents_cannot_swap_positions():
         ),
         Agent(
             id=1,
-            position=Position(2, 2),
+            position=Position(2, 3),
             goal=Position(0, 0),
         ),
     ]
@@ -27,12 +27,14 @@ def test_agents_cannot_swap_positions():
         agents=agents,
     )
 
-    state = env.step({
+    state, collisions = env.step({
         0: Action.RIGHT,
         1: Action.LEFT,
     })
 
     assert state == (
         Position(2, 1),
-        Position(2, 2),
+        Position(2, 3),
     )
+
+    assert collisions == {(0, 1)}

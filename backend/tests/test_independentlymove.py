@@ -26,7 +26,7 @@ def test_agents_can_move_without_collision():
         agents=agents,
     )
 
-    state = env.step({
+    state, collisions = env.step({
         0: Action.RIGHT,
         1: Action.LEFT,
     })
@@ -35,3 +35,5 @@ def test_agents_can_move_without_collision():
         Position(0, 1),
         Position(4, 3),
     )
+
+    assert collisions == set()
